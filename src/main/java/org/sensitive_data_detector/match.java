@@ -53,33 +53,33 @@ public class match {
 
     public static String checkID(String value) {
         if (idPattern.matcher(value).matches() && (value.length() == 15 || value.length() == 18)) {
-            return value + " 身份证 " + s4;
+            return " 身份证 " + s4;
         } else {
-            return value + " " + s1;
+            return s1;
         }
     }
 
     public static String checkPhone(String value) {
         if (phonePattern.matcher(value).matches() && value.length() == 11) {
-            return value + " 固话 " + s3;
+            return " 固话 " + s3;
         } else {
-            return value + " " + s1;
+            return s1;
         }
     }
 
     public static String checkMobilePhone(String value) {
-        if (mobliePhonePattern.matcher(value).matches() && value.length() == 11) {
-            return value + " 手机 " + s4;
+        if (mobliePhonePattern.matcher(value).find()) {
+            return " 手机 " + s4;
         } else {
-            return value + " " + s1;
+            return s1;
         }
     }
 
     public static String checkEmail(String value) {
-        if (emailPattern.matcher(value).matches()) {
-            return value + " 邮箱 " + s3;
+        if (emailPattern.matcher(value).find()) {
+            return " 邮箱 " + s3;
         } else {
-            return value + " " + s1;
+            return s1;
         }
     }
 
@@ -91,39 +91,59 @@ public class match {
         }
     }
 
-    public static String checkChineseAddressAndName(List<seg_word> segWords) {
+    public static String checkChineseAddress(List<seg_word> segWords) {
         String address = s4 + ":";
-        String name = s4 + ":";
+
         for (seg_word word : segWords) {
             if(word.PartOfSpeech.matches(addressPattern)){
                 address += word.word;
             }
-            if(word.PartOfSpeech.matches(personNamePattern)){
+        }
+        return address;
+    }
+
+    public static String checkChineseName(List<seg_word> segWords){
+        String name = s4 + ":";
+        for (seg_word word : segWords) {
+            if (word.PartOfSpeech.matches(personNamePattern)) {
                 name += word.word + " ";
+                return name;
             }
         }
-        return address +"\n" + name;
+        return null;
     }
 
     public static String autoCheckSecret(String value) {
         if (value.length() <= 1) {
             return s1;
         }
-        if (idPattern.matcher(value).matches() && (value.length() == 15 || value.length() == 18)) {
-            return value + " 身份证 " + s4;
-        } else if (bankCardPattern.matcher(value).matches() && (value.length() == 16 || value.length() == 19)) {
-            return value + " 银行卡 " + s3;
-        } else if (phonePattern.matcher(value).matches()) {
-            return value + " 固话 " + s3;
-        } else if (emailPattern.matcher(value).matches()) {
-            return value + " 邮箱 " + s3;
-        } else if (mobliePhonePattern.matcher(value).matches() && value.length() == 11) {
-            return value + " 手机 " + s4;
-        } else {
-            List<seg_word> words = sentenceSplit(value);
-            checkChineseAddressAndName(words);//姓名 电话
-        }
-        return null;
+//        if (idPattern.matcher(value).matches() && (value.length() == 15 || value.length() == 18)) {
+//            return value + " 身份证 " + s4;
+//        } else if (bankCardPattern.matcher(value).matches() && (value.length() == 16 || value.length() == 19)) {
+//            return value + " 银行卡 " + s3;
+//        } else if (phonePattern.matcher(value).matches()) {
+//            return value + " 固话 " + s3;
+//        } else if (emailPattern.matcher(value).matches()) {
+//            return value + " 邮箱 " + s3;
+//        } else if (mobliePhonePattern.matcher(value).matches() && value.length() == 11) {
+//            return value + " 手机 " + s4;
+//        } else {
+//            List<seg_word> words = sentenceSplit(value);
+//            checkChineseAddress(words);//姓名 电话
+//        }
+        List<seg_word> words = sentenceSplit(value);//分词
+        String ID      = checkID(value);
+        String bankCard= checkBankCard(value);
+        String mbPhone = checkMobilePhone(value);
+        String phone   = checkMobilePhone(value);
+        String email   = checkEmail(value);
+
+        //中文地址和中中文姓名需要分词检测
+        String address = checkChineseAddress(words);//地址
+        String name    = checkChineseName(words);
+        String RISK = ID + phone + bankCard + mbPhone + address + name;
+
+        return RISK;
     }
 
     public static List<seg_word> sentenceSplit(String sentence){
@@ -147,9 +167,8 @@ public class match {
                 +"身份证123456789123456789"+"email2858941676@qq.com";
 
         autoCheckSecret(sentence);//身份证 邮箱 号码 固话 银行卡
-
         List<seg_word> words = sentenceSplit(sentence);
-        checkChineseAddressAndName(words);//姓名 电话
+        checkChineseAddress(words);//姓名 电话
     }
 }
 

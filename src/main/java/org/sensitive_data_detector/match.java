@@ -1,4 +1,8 @@
 package org.sensitive_data_detector;
+import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.*;
 
 public class match {
@@ -10,6 +14,16 @@ public class match {
     public static String bank_card_pattern =" ([1-9]{1})(\\d{15}|\\d{18})";
     public static String digit_pattern = "0|1|2|3|4|5|6|7|8|9";
     public static String address = "(ns|nsf|nz|nt)";
+    public static List<String> RISK = new ArrayList<>(4);//风险等级
+
+    public match()
+    {
+        RISK.add("无风险");
+        RISK.add("低风险");
+        RISK.add("中风险");
+        RISK.add("高风险");
+    }
+
     public static void main(String[] args) {
         String rex = "\\d*";
         String nb = "2858941676@qq.com";
@@ -62,7 +76,4 @@ public class match {
             return "固话"+value;
         return value;
     }
-
-
 }
-

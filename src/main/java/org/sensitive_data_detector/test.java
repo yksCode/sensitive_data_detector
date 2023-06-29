@@ -24,17 +24,6 @@ public class test {
     private static final String s3 = "中风险";
     private static final String s4 = "高风险";
 
-    public static void main(String[] args) {
-//        String input = "35052119991228151"; // Replace with your input string
-//        String result = autoCheckSecret(input);
-//        System.out.println(result);
-        String sentence = "叶开盛是华南师范大学计算机学院的学生";
-        List<seg_word> words = sentenceSplit(sentence);
-        for(seg_word word:words){
-            System.out.println(word.word+"\t"+word.PartOfSpeech);
-        }
-    }
-
     public static String sensitiveWordRecognize(String database, String table, String[] columns, String[][] data, int index, int size) {
         int dataLen = data.length;
         size = (int) Math.ceil(dataLen / (double) size);
@@ -102,18 +91,18 @@ public class test {
         }
     }
 
-    public static String checkChineseAddressAndName(String value) {
-        String[] segText = value.split(" ");
-        StringBuilder result = new StringBuilder();
-        for (String word : segText) {
-            if (word.matches(addressPattern)) {
-                return value + " 地址 " + s4;
+    public static String checkChineseAddressAndName(List<seg_word> segWords) {
+        String address = s4 + ":";
+        String name = s4 + ":";
+        for (seg_word word : segWords) {
+            if(word.PartOfSpeech.matches(addressPattern)){
+                address += word.word;
             }
-            if (word.matches(personNamePattern)) {
-                return value + " 姓名 " + s4;
+            if(word.PartOfSpeech.matches(personNamePattern)){
+                name += word.word + " ";
             }
         }
-        return result.toString();
+        return address +"\n" + name;
     }
 
     public static String autoCheckSecret(String value) {
@@ -131,20 +120,16 @@ public class test {
         } else if (mobliePhonePattern.matcher(value).matches() && value.length() == 11) {
             return value + " 手机 " + s4;
         } else {
-            String result = checkChineseAddressAndName(value);
-            if (!result.isEmpty()) {
-                return result;
-            } else {
-                return value + " " + s1;
-            }
+            List<seg_word> words = sentenceSplit(value);
+            checkChineseAddressAndName(words);//姓名 电话
         }
+        return null;
     }
 
     public static List<seg_word> sentenceSplit(String sentence){
         Segment segment = HanLP.newSegment().enablePlaceRecognize(true);
         List<Term> termList = segment.seg(sentence);
-        List<seg_word> segWords = new ArrayList<>();
-        System.out.println(termList);
+        List<seg_word> segWords = new ArrayList<>();//分好的词
         for (Term term : termList) {
             String word = term.toString().substring(0, term.length());      //词
             String nature = term.toString().substring(term.length() + 1);   //词性
@@ -152,6 +137,19 @@ public class test {
             segWords.add(segWord);
         }
         return segWords;
+    }
+
+    public static void main(String[] args) {
+//        String input = "35052119991228151"; // Replace with your input string
+//        String result = autoCheckSecret(input);
+//        System.out.println(result);
+        String sentence = "叶开盛23214是华南师范大学计算机学院的学生，他的电话号码是13055644812"
+                +"身份证123456789123456789"+"email2858941676@qq.com";
+
+        autoCheckSecret(sentence);//身份证 邮箱 号码 固话 银行卡
+
+        List<seg_word> words = sentenceSplit(sentence);
+        checkChineseAddressAndName(words);//姓名 电话
     }
 }
 

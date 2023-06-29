@@ -1,79 +1,155 @@
 package org.sensitive_data_detector;
-import com.google.common.collect.Lists;
+
+import com.hankcs.hanlp.HanLP;
+import com.hankcs.hanlp.seg.Segment;
+import com.hankcs.hanlp.seg.common.Term;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class match {
-    public static String moblie_phone_pattern = "1[356789]\\d{9}";//移动电话
-    public static String phone_pattern = "0\\d{2,3}-[1-9]\\d{6,7}";//固话
-    public static String id_pattern = "([1-9]\\d{5}(18|19|([23]\\d))\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx])|([1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{2})";
-//    public static String
-    public static String email_pattern = "[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(?:\\.[a-zA-Z0-9_-]+)";
-    public static String bank_card_pattern =" ([1-9]{1})(\\d{15}|\\d{18})";
-    public static String digit_pattern = "0|1|2|3|4|5|6|7|8|9";
-    public static String address = "(ns|nsf|nz|nt)";
-    public static List<String> RISK = new ArrayList<>(4);//风险等级
+    private static final Pattern mobliePhonePattern = Pattern.compile("1[356789]\\d{9}");
+    private static final Pattern phonePattern = Pattern.compile("0\\d{2,3}-[1-9]\\d{6,7}");
+    private static final Pattern idPattern = Pattern.compile("([1-9]\\d{5}(18|19|([23]\\d))\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx])|([1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{2})");
+    private static final Pattern emailPattern = Pattern.compile("[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(?:\\.[a-zA-Z0-9_-]+)");
+    private static final Pattern bankCardPattern = Pattern.compile("([1-9]{1})(\\d{15}|\\d{18})");
+    private static final Pattern digitPattern = Pattern.compile("0|1|2|3|4|5|6|7|8|9");
+    private static final String addressPattern = "(ns|nsf|nz|nt)";
+    private static final String personNamePattern = "nr|nrf";
 
-    public match()
-    {
-        RISK.add("无风险");
-        RISK.add("低风险");
-        RISK.add("中风险");
-        RISK.add("高风险");
+    private static final String s1 = "无风险";
+    private static final String s2 = "低风险";
+    private static final String s3 = "中风险";
+    private static final String s4 = "高风险";
+
+    public static String sensitiveWordRecognize(String database, String table, String[] columns, String[][] data, int index, int size) {
+        int dataLen = data.length;
+        size = (int) Math.ceil(dataLen / (double) size);
+        int start = index * size;
+        int end = Math.min((index + 1) * size, dataLen);
+        StringBuilder resultStr = new StringBuilder();
+        for (int i = start; i < end; i++) {
+            String[] rowData = data[i];
+            int k = 0;
+            for (String value : rowData) {
+                String[] result = {database, table, columns[k], value, autoCheckSecret(value)};
+                resultStr.append(result).append("\r\n");
+                k++;
+            }
+        }
+        return resultStr.toString();
+    }
+
+    public static String checkSecret(Pattern pattern, String value) {
+        Matcher matcher = pattern.matcher(value);
+        if (matcher.find()) {
+            return value + " " + s4;
+        } else {
+            return value + " " + s1;
+        }
+    }
+
+    public static String checkID(String value) {
+        if (idPattern.matcher(value).matches() && (value.length() == 15 || value.length() == 18)) {
+            return value + " 身份证 " + s4;
+        } else {
+            return value + " " + s1;
+        }
+    }
+
+    public static String checkPhone(String value) {
+        if (phonePattern.matcher(value).matches() && value.length() == 11) {
+            return value + " 固话 " + s3;
+        } else {
+            return value + " " + s1;
+        }
+    }
+
+    public static String checkMobilePhone(String value) {
+        if (mobliePhonePattern.matcher(value).matches() && value.length() == 11) {
+            return value + " 手机 " + s4;
+        } else {
+            return value + " " + s1;
+        }
+    }
+
+    public static String checkEmail(String value) {
+        if (emailPattern.matcher(value).matches()) {
+            return value + " 邮箱 " + s3;
+        } else {
+            return value + " " + s1;
+        }
+    }
+
+    public static String checkBankCard(String value) {
+        if (bankCardPattern.matcher(value).matches() && (value.length() == 16 || value.length() == 19)) {
+            return value + " 银行卡 " + s3;
+        } else {
+            return value + " " + s1;
+        }
+    }
+
+    public static String checkChineseAddressAndName(List<seg_word> segWords) {
+        String address = s4 + ":";
+        String name = s4 + ":";
+        for (seg_word word : segWords) {
+            if(word.PartOfSpeech.matches(addressPattern)){
+                address += word.word;
+            }
+            if(word.PartOfSpeech.matches(personNamePattern)){
+                name += word.word + " ";
+            }
+        }
+        return address +"\n" + name;
+    }
+
+    public static String autoCheckSecret(String value) {
+        if (value.length() <= 1) {
+            return s1;
+        }
+        if (idPattern.matcher(value).matches() && (value.length() == 15 || value.length() == 18)) {
+            return value + " 身份证 " + s4;
+        } else if (bankCardPattern.matcher(value).matches() && (value.length() == 16 || value.length() == 19)) {
+            return value + " 银行卡 " + s3;
+        } else if (phonePattern.matcher(value).matches()) {
+            return value + " 固话 " + s3;
+        } else if (emailPattern.matcher(value).matches()) {
+            return value + " 邮箱 " + s3;
+        } else if (mobliePhonePattern.matcher(value).matches() && value.length() == 11) {
+            return value + " 手机 " + s4;
+        } else {
+            List<seg_word> words = sentenceSplit(value);
+            checkChineseAddressAndName(words);//姓名 电话
+        }
+        return null;
+    }
+
+    public static List<seg_word> sentenceSplit(String sentence){
+        Segment segment = HanLP.newSegment().enablePlaceRecognize(true);
+        List<Term> termList = segment.seg(sentence);
+        List<seg_word> segWords = new ArrayList<>();//分好的词
+        for (Term term : termList) {
+            String word = term.toString().substring(0, term.length());      //词
+            String nature = term.toString().substring(term.length() + 1);   //词性
+            seg_word segWord = new seg_word(word,nature);
+            segWords.add(segWord);
+        }
+        return segWords;
     }
 
     public static void main(String[] args) {
-        String rex = "\\d*";
-        String nb = "2858941676@qq.com";
-        System.out.println(nb.matches(email_pattern));
-    }
+//        String input = "35052119991228151"; // Replace with your input string
+//        String result = autoCheckSecret(input);
+//        System.out.println(result);
+        String sentence = "叶开盛23214是华南师范大学计算机学院的学生，他的电话号码是13055644812"
+                +"身份证123456789123456789"+"email2858941676@qq.com";
 
-    public static String check_id(String value)
-    {
-        return null;
-    }
+        autoCheckSecret(sentence);//身份证 邮箱 号码 固话 银行卡
 
-    public static String check_phone(String value)
-    {
-        return null;
-    }
-
-    public static String check_mobile_phone(String value)
-    {
-        return null;
-    }
-
-    public static String check_email(String value)
-    {
-        return null;
-    }
-
-    public static String check_bank_card(String value)
-    {
-        return null;
-    }
-
-    public static String check_chinese_address_and_name(String value)
-    {
-        return null;
-    }
-
-    public static String auto_check_secret(String value)
-    {
-        if(value.length() <= 1)
-            return "无风险";
-        else if(check_id(value) != null && value.length() == 18 && value.length() == 15)
-            return "身份证"+value;
-        else if(check_bank_card(value) != null && value.length() == 16 && value.length() == 19)
-            return "银行卡"+value;
-        else if(check_phone(value) != null)
-            return "固话"+value;
-        else if(check_mobile_phone(value) != null)
-            return "固话"+value;
-        else if(check_email(value) != null)
-            return "固话"+value;
-        return value;
+        List<seg_word> words = sentenceSplit(sentence);
+        checkChineseAddressAndName(words);//姓名 电话
     }
 }
+

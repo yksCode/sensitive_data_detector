@@ -69,6 +69,7 @@ public class DB {
             ResultSet resultSet = statement.executeQuery(query);
             while (resultSet.next()) {
                 String columnName = resultSet.getString(1);
+//                System.out.println(columnName);
                 result.add(columnName);
             }
         } catch (SQLException e) {

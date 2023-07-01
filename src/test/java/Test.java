@@ -60,19 +60,36 @@ public class Test {
             Info += "\n]\n" + line + "\n\n";
 
             //写入文件
-            String fileName = "Message.txt";
-            try (FileWriter fileWriter = new FileWriter(fileName, true);
-                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
-                bufferedWriter.write(Info);
-                bufferedWriter.newLine(); // 添加换行符
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            System.out.println(Info);
+//            String fileName = "Message.txt";
+//            try (FileWriter fileWriter = new FileWriter(fileName, true);
+//                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+//                bufferedWriter.write(Info);
+//                bufferedWriter.newLine(); // 添加换行符
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//            System.out.println(Info);
         }
     }
     public static void main(String[] args) {
-        test();
+        performance();
     }
+
+    public static void performance(){
+        long startTime = System.nanoTime();
+        System.out.println("10000 columns are tested");
+        // 调用要测试的函数
+        test();
+        // 记录结束时间
+        long endTime = System.nanoTime();
+        // 计算函数执行时间（毫秒）
+        double executionTime = (endTime - startTime) / 1_000_000.0;
+        // 计算函数执行时间（秒）
+        double executionTimeInSeconds = executionTime / 1000.0;
+        // 精确到0.1秒
+        double roundedTime = Math.round(executionTimeInSeconds * 10) / 10.0;
+        System.out.println("spent " + roundedTime + "S");
+    }
+
 }

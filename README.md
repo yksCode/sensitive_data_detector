@@ -1,9 +1,7 @@
 # sensitive_data_detector
 
-#### 运行结果如下：
-
-![image-20230701083529058](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20230701083529058.png)
-
+#### 测试代码在src/test/java/Test.java,运行结果如下：
+![image-20230701083529058](https://github.com/yksCode/sensitive_data_detector/assets/48611034/c4f79551-1774-4c35-85e8-1ad22569c8d7)
 
 
 1.检测一段话中所包含的个人敏感信息：

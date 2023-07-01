@@ -59,17 +59,17 @@ public class Test {
             }
             Info += "\n]\n" + line + "\n\n";
 
-            //写入文件
-//            String fileName = "Message.txt";
-//            try (FileWriter fileWriter = new FileWriter(fileName, true);
-//                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
-//                bufferedWriter.write(Info);
-//                bufferedWriter.newLine(); // 添加换行符
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//            System.out.println(Info);
+//            写入文件
+            String fileName = "Message.txt";
+            try (FileWriter fileWriter = new FileWriter(fileName, true);
+                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+                bufferedWriter.write(Info);
+                bufferedWriter.newLine(); // 添加换行符
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            System.out.println(Info);
         }
     }
     public static void main(String[] args) {

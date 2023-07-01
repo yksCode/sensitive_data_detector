@@ -42,3 +42,33 @@ List<String> table = db.getLine(db_name.get(0), table_name.get(0));
 
 ```
 
+3.其他API接口
+
+```java
+/*
+* match类的API
+*/
+//检测value字符串中的信息
+public static String checkID(String value);
+public static String checkPhone(String value);
+public static String checkBankCard(String value);
+public static String checkMobilePhone(String value);
+//中文名字和中文地址识别需要调用hanlp分词
+public static List<seg_word> sentenceSplit(String sentence);
+public static String checkChineseName(List<seg_word> segWords);
+public static String checkChineseAddress(List<seg_word> segWords);
+     
+```
+
+```java
+/*
+* DB类的API
+*/
+public DB(String ip, String username, String password, String db_name);
+public List<String> getDatabase();
+public List<String> getTable(String database);
+public List<String> getColumn(String database, String table);
+public List<String> getContent(String database, String table, String column);
+public List<String> getLine(String database, String table);
+```
+

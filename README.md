@@ -7,8 +7,7 @@
 ![image-20230701083529058](https://github.com/yksCode/sensitive_data_detector/assets/48611034/c4f79551-1774-4c35-85e8-1ad22569c8d7)
 
 ### 程序流程
-![image](https://github.com/yksCode/sensitive_data_detector/assets/48611034/0f7f900a-b442-4068-866e-afea4885405a)
-
+![流程图](https://github.com/yksCode/sensitive_data_detector/assets/48611034/a79eda2a-62a0-4582-ab2d-ea62f84a42e6)
 
 ### 检测原理
 

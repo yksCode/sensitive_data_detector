@@ -1,8 +1,18 @@
 # sensitive_data_detector
 
-#### 测试代码在src/test/java/Test.java,运行结果如下：
+### 运行结果
+
+测试代码在src/test/java/Test.java
+
 ![image-20230701083529058](https://github.com/yksCode/sensitive_data_detector/assets/48611034/c4f79551-1774-4c35-85e8-1ad22569c8d7)
 
+### 检测原理
+
+1.正则表达式：正则表达式是一种强大的文本匹配工具，它可以用来识别特定模式的字符串。首先定义一个正则表达式模式，该模式描述了要匹配的敏感信息的特征。模式可以包含普通字符（如字母和数字）以及特殊字符和元字符（如通配符、限定符、字符类等）。正则表达式引擎会根据模式的规则进行匹配。正则表达式适用于有规律的字符串，例如固定长度的身份证号、手机号、银行卡号和固定格式的邮箱地址。
+
+2.nlp分词：基于github上的开源库hanLP，可以识别中文姓名和中文地址。此库通过对熟语料自动角色标注，统计单词的角色频次、角色的转移概率等，训练出一个模型，同时总结一些可用的模式串，然后根据上述模型，利用[HMM-Viterbi算法](http://www.hankcs.com/nlp/general-java-implementation-of-the-viterbi-algorithm.html)标注陌生文本的粗分结果，利用[Aho-Corasick算法](http://www.hankcs.com/program/algorithm/implementation-and-analysis-of-aho-corasick-algorithm-in-java.html)模式匹配，匹配出可能的地址，将其送入第二层隐马尔可夫模型中。算法详解：[《实战HMM-Viterbi角色标注中国人名识别》](http://www.hankcs.com/nlp/chinese-name-recognition-in-actual-hmm-viterbi-role-labeling.html)；[《实战HMM-Viterbi角色标注地名识别》](http://www.hankcs.com/nlp/ner/place-names-to-identify-actual-hmm-viterbi-role-labeling.html)
+
+### API
 
 1.检测一段话中所包含的个人敏感信息：
 
@@ -40,7 +50,16 @@ List<String> table = db.getLine(db_name.get(0), table_name.get(0));
 
 ```
 
-3.其他API接口
+3.性能测试
+
+```java
+/*
+*	src/test/java/Test.java
+*/
+public static void performance();
+```
+
+4.数据库类和敏感信息匹配类
 
 ```java
 /*
@@ -69,4 +88,30 @@ public List<String> getColumn(String database, String table);
 public List<String> getContent(String database, String table, String column);
 public List<String> getLine(String database, String table);
 ```
+
+### 性能测试
+
+1.测试平台
+
+|        CPU         | AMD Ryzen 5 5600G    3.90 GHz |
+| :----------------: | :---------------------------: |
+|    **操作系统**    |     **Ubuntu 18.04 LTS**      |
+|  **JDK version**   |           **20.1**            |
+| **Python version** |            **3.8**            |
+
+2.测试方法
+
+处理**10,000**条数据**10**次的平均花销时间，处理过程包括读库、检测、写入文件。
+
+3.性能对比
+
+|    java    |   7.9S    |
+| :--------: | :-------: |
+| **python** | **34.7S** |
+
+### 优化思路
+
+多线程并发可能可以减少时间花销
+
+
 
